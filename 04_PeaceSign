@@ -1,0 +1,33 @@
+#include <Servo.h>
+
+// Thumb servos
+Servo thumbArticulation;  // Pin 8
+Servo thumbOpposition;    // Pin 9
+
+// Finger servos
+Servo indexServo;   // Pin 10
+Servo middleServo;  // Pin 11
+Servo ringServo;    // Pin 12
+Servo pinkyServo;   // Pin 13
+
+void setup() {
+  // Attach all servos
+  thumbArticulation.attach(8);
+  thumbOpposition.attach(9);
+  indexServo.attach(10);
+  middleServo.attach(11);
+  ringServo.attach(12);
+  pinkyServo.attach(13);
+
+  // Set peace sign
+  thumbArticulation.write(0);
+  thumbOpposition.write(0); // closed
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+void loop() {
+  // Keep gesture displayed
+}
