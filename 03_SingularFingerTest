@@ -1,0 +1,15 @@
+#include <Servo.h>
+
+Servo fingerServo;  // create a servo object
+
+void setup() {
+  fingerServo.attach(13);  // attach servo to pin 13
+}
+
+void loop() {
+  fingerServo.write(0);    // move to 0 degrees (start)
+  delay(1000);             // wait 1 second
+
+  fingerServo.write(180);  // move to 180 degrees (end)
+  delay(1000);             // wait 1 second
+}
