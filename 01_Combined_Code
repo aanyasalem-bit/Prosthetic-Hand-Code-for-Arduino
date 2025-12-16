@@ -1,0 +1,294 @@
+/* This code combines my original sketches (Math, Gestures, and Grabbing) into one big sketch controlled by reading the serial monitor */ 
+
+#include <Servo.h>   // Import Arduino Servo library to control servo motors
+
+// ================== SERVO OBJECTS ==================
+
+// Thumb servos (two degrees of freedom)
+Servo thumbArticulation;   // Controls thumb bending (attached to pin 8)
+Servo thumbOpposition;     // Controls thumb rotation/opposition (attached to pin 9)
+
+// Finger servos (one per finger)
+Servo indexServo;          // Index finger (pin 10)
+Servo middleServo;         // Middle finger (pin 11)
+Servo ringServo;           // Ring finger (pin 12)
+Servo pinkyServo;          // Pinky finger (pin 13)
+
+// Controls whether the automatic gesture loop is running
+bool loopActive = false;
+
+
+// ================== HELPER FUNCTIONS ==================
+
+// Opens the entire hand (used for "relax" and Paper in Rock-Paper-Scissors)
+void openHand() {
+  thumbArticulation.write(180);
+  thumbOpposition.write(180);
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(0);
+  pinkyServo.write(0);
+}
+
+// Closes the entire hand into a fist (used for "grab" and Rock in RPS)
+void closeHand() {
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(180);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+// Opens an individual finger (0° = extended)
+void openFinger(Servo &f) {
+  f.write(0);
+}
+
+// Closes an individual finger (180° = bent)
+void closeFinger(Servo &f) {
+  f.write(180);
+}
+
+// Fully closes the hand into a fist (same as the close hand function just written a different way)
+void closeFist() {
+  closeFinger(indexServo);
+  closeFinger(middleServo);
+  closeFinger(ringServo);
+  closeFinger(pinkyServo);
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+}
+
+// Displays a number briefly, then returns to a fist
+void animateNumber(int n) {
+  showNumber(n);   // Show the number using fingers
+  delay(1000);     // Hold for visibility
+  closeFist();     // Reset hand
+  delay(700);
+}
+
+
+// ================== INDIVIDUAL GESTURES ==================
+
+// Closes the hand a specific amount so it can grasp small objects
+void grabHand() {
+  thumbOpposition.write(0);
+  delay(200);
+  thumbArticulation.write(90);
+  indexServo.write(120);
+  middleServo.write(120);
+  ringServo.write(120);
+  pinkyServo.write(120);
+  Serial.println("Hand Closed.");
+}
+
+// Opens the hand completely (same as the open hand function just a different name)
+void relaxHand() {
+  openHand();
+  Serial.println("Hand Open.");
+}
+
+// Peace sign (index and middle fingers extended)
+// Also used as "Scissors" in Rock-Paper-Scissors
+void peaceSign() {
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+// Rock sign (index and pinky extended)
+void rockSign() {
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(0);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(0);
+}
+
+// Shaka / hang-loose sign (thumb and pinky extended)
+void shakaSign() {
+  thumbArticulation.write(180);
+  thumbOpposition.write(180);
+  indexServo.write(180);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(0);
+}
+
+// OK sign (thumb and index forming a circle)
+void okSign() {
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(180);
+  middleServo.write(70);
+  ringServo.write(0);
+  pinkyServo.write(0);
+}
+
+
+// ================== NUMBER DISPLAY ==================
+
+// Displays numbers 0–5 using fingers (used for math output)
+void showNumber(int n) {
+  closeHand();       // Start from closed hand
+  delay(300);
+
+  if (n >= 1) indexServo.write(0);
+  if (n >= 2) middleServo.write(0);
+  if (n >= 3) ringServo.write(0);
+  if (n >= 4) pinkyServo.write(0);
+  if (n == 5) {
+    thumbArticulation.write(180);
+    thumbOpposition.write(180);
+  }
+}
+
+
+// ================== AUTOMATIC GESTURE LOOP ==================
+
+// Runs a full demonstration sequence of hand movements
+void gestureLoop() {
+
+  // 1. Close fingers one-by-one (pinky → thumb)
+  openHand();
+  delay(500);
+  pinkyServo.write(180);
+  delay(500);
+  ringServo.write(180);
+  delay(500);
+  middleServo.write(180);
+  delay(500);
+  indexServo.write(180);
+  delay(500);
+  thumbArticulation.write(0);
+  delay(500);
+  thumbOpposition.write(0);
+  delay(1000);
+
+  // 2. Open fingers one-by-one (thumb → pinky)
+  closeHand();
+  delay(500);
+  thumbOpposition.write(180);
+  delay(500);
+  thumbArticulation.write(180);
+  delay(500);
+  indexServo.write(0);
+  delay(500);
+  middleServo.write(0);
+  delay(500);
+  ringServo.write(0);
+  delay(500);
+  pinkyServo.write(0);
+  delay(1500);
+
+  // 3–6. Show various gestures
+  peaceSign(); delay(1500);
+  rockSign();  delay(1500);
+  shakaSign(); delay(1500);
+  okSign();    delay(1500);
+
+  // 7. Count from 1 to 5 using fingers
+  closeHand();
+  delay(500);
+  indexServo.write(0);  delay(500);   // 1
+  middleServo.write(0); delay(500);   // 2
+  ringServo.write(0);   delay(500);   // 3
+  pinkyServo.write(0);  delay(500);   // 4
+  thumbArticulation.write(180);
+  thumbOpposition.write(180);
+  delay(2000);          // 5
+}
+
+
+// ================== SETUP FUNCTION ==================
+
+void setup() {
+  Serial.begin(9600);   // Start serial communication
+
+  // Attach each servo to its assigned pin
+  thumbArticulation.attach(8);
+  thumbOpposition.attach(9);
+  indexServo.attach(10);
+  middleServo.attach(11);
+  ringServo.attach(12);
+  pinkyServo.attach(13);
+
+  openHand();  // Start with hand open
+
+  // Instructions for user
+  Serial.println("Enter a Command: grab, relax, peace, rock, shaka, ok, start loop, stop loop, or math like 2+3 or 4-1:");
+}
+
+
+// ================== MAIN LOOP ==================
+
+void loop() {
+
+  // Run automatic gesture loop if enabled
+  if (loopActive) {
+    gestureLoop();
+  }
+
+  // Check for user input from Serial Monitor
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+
+    // ----- Manual Gesture Commands -----
+    if (cmd == "grab") grabHand();
+    else if (cmd == "relax") relaxHand();
+    else if (cmd == "peace") peaceSign();
+    else if (cmd == "rock") rockSign();
+    else if (cmd == "shaka") shakaSign();
+    else if (cmd == "ok") okSign();
+
+    // ----- Start / Stop Automatic Loop -----
+    else if (cmd == "start loop") {
+      loopActive = true;
+      Serial.println("Gesture loop started.");
+    }
+    else if (cmd == "stop loop") {
+      loopActive = false;
+      openHand();
+      Serial.println("Gesture loop stopped.");
+    }
+
+    // ----- Math Commands (Addition / Subtraction) -----
+    else if (cmd.indexOf('+') > 0 || cmd.indexOf('-') > 0) {
+
+      int opIndex = cmd.indexOf('+');
+      bool isAdd = true;
+
+      if (opIndex == -1) {
+        opIndex = cmd.indexOf('-');
+        isAdd = false;
+      }
+
+      int a = cmd.substring(0, opIndex).toInt();
+      int b = cmd.substring(opIndex + 1).toInt();
+      int result = isAdd ? a + b : a - b;
+
+      // Print equation and result
+      Serial.print(a);
+      Serial.print(isAdd ? " + " : " - ");
+      Serial.print(b);
+      Serial.print(" = ");
+      Serial.println(result);
+
+      // Animate numbers using fingers
+      animateNumber(a);
+      animateNumber(b);
+      showNumber(result);
+    }
+
+    // ----- Invalid Input -----
+    else {
+      Serial.println("Invalid command!");
+    }
+  }
+}
