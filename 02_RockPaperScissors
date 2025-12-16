@@ -1,0 +1,105 @@
+#include <Servo.h>
+
+// Thumb servos
+Servo thumbArticulation;  // Pin 8
+Servo thumbOpposition;    // Pin 9
+
+// Finger servos
+Servo indexServo;   // Pin 10
+Servo middleServo;  // Pin 11
+Servo ringServo;    // Pin 12
+Servo pinkyServo;   // Pin 13
+
+// ================== HELPER FUNCTIONS ==================
+void openHand() { // Paper
+  thumbArticulation.write(180);
+  thumbOpposition.write(180);
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(0);
+  pinkyServo.write(0);
+}
+
+void closeHand() { // Rock
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(180);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+void peaceSign() { // Scissors
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+// ================== RPS SEQUENCE ==================
+void playRPS() {
+
+  Serial.println("Rock");
+  closeHand();
+  delay(2000);
+
+  Serial.println("Paper");
+  openHand();
+  delay(2000);
+
+  Serial.println("Scissors");
+  peaceSign();
+  delay(2000);
+
+  Serial.println("Shoot...");
+  closeHand();
+  delay(2000);
+
+  int choice = random(3); // 0=Rock, 1=Paper, 2=Scissors
+  Serial.print("Result: ");
+
+  if (choice == 0) {
+    closeHand();
+    Serial.println("Rock");
+  }
+  else if (choice == 1) {
+    openHand();
+    Serial.println("Paper");
+  }
+  else {
+    peaceSign();
+    Serial.println("Scissors");
+  }
+}
+
+// ================ SETUP =================
+void setup() {
+  Serial.begin(9600);
+
+  thumbArticulation.attach(8);
+  thumbOpposition.attach(9);
+  indexServo.attach(10);
+  middleServo.attach(11);
+  ringServo.attach(12);
+  pinkyServo.attach(13);
+
+  openHand();
+  randomSeed(analogRead(A0));
+
+  Serial.println("Type RPS to play Rock-Paper-Scissors");
+}
+
+// ================ MAIN LOOP =================
+void loop() {
+  if (!Serial.available()) return;
+
+  String cmd = Serial.readStringUntil('\n');
+  cmd.trim();
+  cmd.toUpperCase();
+
+  if (cmd == "RPS") {
+    playRPS();
+  }
+}
