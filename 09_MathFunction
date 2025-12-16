@@ -1,0 +1,130 @@
+#include <Servo.h>
+
+// Thumb servos
+Servo thumbArticulation;  // Pin 8 (0 = closed, 180 = open)
+Servo thumbOpposition;    // Pin 9 (0 = closed, 180 = open)
+
+// Finger servos
+Servo indexServo;   // Pin 10
+Servo middleServo;  // Pin 11
+Servo ringServo;    // Pin 12
+Servo pinkyServo;   // Pin 13
+
+// ===== HELPER FUNCTIONS =====
+
+// Open a finger (0°)
+void openFinger(Servo &f) {
+  f.write(0);
+}
+
+// Close a finger (180°)
+void closeFinger(Servo &f) {
+  f.write(180);
+}
+
+// Close entire fist
+void closeFist() {
+  closeFinger(indexServo);
+  closeFinger(middleServo);
+  closeFinger(ringServo);
+  closeFinger(pinkyServo);
+
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+}
+
+// Show a number 0–5 on the hand
+void showNumber(int n) {
+
+  if (n < 0 || n > 5) {
+    Serial.println("Invalid result: cannot display on hand.");
+    closeFist();
+    return;
+  }
+
+  closeFist();
+  delay(300);
+
+  if (n >= 1) openFinger(indexServo);
+  if (n >= 2) openFinger(middleServo);
+  if (n >= 3) openFinger(ringServo);
+  if (n >= 4) openFinger(pinkyServo);
+
+  if (n == 5) {
+    thumbArticulation.write(180);
+    thumbOpposition.write(180);
+  }
+
+  Serial.print("Displayed: ");
+  Serial.println(n);
+}
+
+// Animate: show number → close fist
+void animateNumber(int n) {
+  showNumber(n);
+  delay(1000);
+  closeFist();
+  delay(700);
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  thumbArticulation.attach(8);
+  thumbOpposition.attach(9);
+
+  indexServo.attach(10);
+  middleServo.attach(11);
+  ringServo.attach(12);
+  pinkyServo.attach(13);
+
+  closeFist();
+  Serial.println("Enter math like 2+3 or 4-1:");
+}
+
+void loop() {
+
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    int opIndex = input.indexOf('+');
+    bool isAdd = true;
+
+    if (opIndex == -1) {
+      opIndex = input.indexOf('-');
+      isAdd = false;
+    }
+
+    if (opIndex == -1) {
+      Serial.println("Invalid format. Use: 2+3 or 4-1");
+      return;
+    }
+
+    int a = input.substring(0, opIndex).toInt();
+    int b = input.substring(opIndex + 1).toInt();
+    int result = isAdd ? a + b : a - b;
+
+    Serial.print(a);
+    Serial.print(isAdd ? " + " : " - ");
+    Serial.print(b);
+    Serial.print(" = ");
+    Serial.println(result);
+
+    if (a < 0 || a > 5) {
+      Serial.println("Invalid first number.");
+      closeFist();
+      return;
+    }
+
+    if (b < 0 || b > 5) {
+      Serial.println("Invalid second number.");
+      closeFist();
+      return;
+    }
+
+    animateNumber(a);
+    animateNumber(b);
+    showNumber(result);
+  }
+}
