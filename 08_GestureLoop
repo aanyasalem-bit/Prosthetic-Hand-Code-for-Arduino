@@ -1,0 +1,149 @@
+/*
+  Hand Gesture Demo Loop 
+*/
+
+#include <Servo.h>
+
+// Two servos for the thumb:
+Servo thumbArticulation;  // Pin 8   (0–180 normal open/close)
+Servo thumbOpposition;    // Pin 9   (0 = closed, 180 = open)
+
+// Finger servos
+Servo indexServo;   // Pin 10
+Servo middleServo;  // Pin 11
+Servo ringServo;    // Pin 12
+Servo pinkyServo;   // Pin 13
+
+// Helper function: open all fingers
+void openHand() {
+  thumbArticulation.write(180);
+  thumbOpposition.write(180); // fully open
+
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(0);
+  pinkyServo.write(0);
+}
+
+// Helper function: close all fingers
+void closeHand() {
+  thumbArticulation.write(0);
+  thumbOpposition.write(0); // fully closed
+
+  indexServo.write(180);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(180);
+}
+
+void setup() {
+  thumbArticulation.attach(8);
+  thumbOpposition.attach(9);
+
+  indexServo.attach(10);
+  middleServo.attach(11);
+  ringServo.attach(12);
+  pinkyServo.attach(13);
+
+  openHand();
+  delay(1000);
+}
+
+
+void loop() {
+
+  /* 1. ONE-BY-ONE FINGER CLOSURE (PINKY → THUMB) */
+  openHand();
+  delay(1000);
+  pinkyServo.write(180);
+  delay(500);
+  ringServo.write(180);
+  delay(500);
+  middleServo.write(180);
+  delay(500);
+  indexServo.write(180);
+  delay(500);
+  thumbArticulation.write(0);
+  delay(500);
+  thumbOpposition.write(0);
+  delay(1500);
+
+  /* 2. ONE-BY-ONE FINGER OPENING (THUMB → PINKY) */
+  closeHand();
+  delay(1000);
+  thumbOpposition.write(180);
+  delay(500);
+  thumbArticulation.write(180);
+  delay(500);
+  indexServo.write(0);
+  delay(500);
+  middleServo.write(0);
+  delay(500);
+  ringServo.write(0);
+  delay(500);
+  pinkyServo.write(0);
+  delay(1500);
+  
+  /* 3. PEACE SIGN ✌️ */
+  thumbArticulation.write(0);    
+  thumbOpposition.write(0);        // closed
+  indexServo.write(0);
+  middleServo.write(0);
+  ringServo.write(180);
+  pinkyServo.write(180);
+  delay(1500);
+
+  /* 4. ROCK N ROLL SIGN 🤘 */
+  thumbArticulation.write(0);
+  thumbOpposition.write(0);
+  indexServo.write(0);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(0);
+  delay(1500);
+
+  /* 5. SHAKA SIGN 🤙 */
+  thumbArticulation.write(180);
+  thumbOpposition.write(180); // open
+  indexServo.write(180);
+  middleServo.write(180);
+  ringServo.write(180);
+  pinkyServo.write(0);
+  delay(1500);
+
+  /* 6. OK SIGN 👌 */
+  thumbArticulation.write(0);      
+  thumbOpposition.write(0);      
+  indexServo.write(180);           
+  middleServo.write(70);
+  ringServo.write(0);
+  pinkyServo.write(0);
+  delay(1500);
+
+/* 7. COUNT 1–5 */
+  closeHand();
+  delay(500);
+
+  // 1 → Index
+  indexServo.write(0);
+  delay(500);
+
+  // 2 → Index + Middle
+  middleServo.write(0);
+  delay(500);
+
+  // 3 → Index + Middle + Ring
+  ringServo.write(0);
+  delay(500);
+
+  // 4 → Index + Middle + Ring + Pinky
+  pinkyServo.write(0);
+  delay(500);
+
+  // 5 → All fingers + Thumb
+  thumbArticulation.write(180);
+  thumbOpposition.write(180);
+  delay(1500);
+
+  /* Loop repeats */
+}
